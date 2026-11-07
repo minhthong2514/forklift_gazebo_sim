@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="forklift_mecanum">
+
+  <xacro:property name="wheel_radius" value="0.05"/>
+  <xacro:property name="wheel_width"  value="0.04"/>
+  <xacro:property name="wheel_x"      value="0.205"/>
+  <xacro:property name="wheel_y"      value="0.1915"/>
+  <xacro:property name="wheel_z"      value="-0.000429"/>
+  <xacro:property name="ground_mu"    value="0.01"/>
+
+  <link name="base_footprint"/>
+
+  <link name="chassis_link">
+    <inertial>
+      <origin xyz="-0.00192512550717041 -0.000689018981572781 0.180449455502325" rpy="0 0 0"/>
+      <mass value="15.3937526903884"/>
+      <inertia ixx="0.0750822670734706" ixy="-1.74008710174754E-05" ixz="0.000685474144944489"
+               iyy="0.0613170241831307" iyz="6.25533060124774E-08" izz="0.0914512222280071"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/base_footprint.STL"/>
+      </geometry>
+      <material name="chassis_grey">
+        <color rgba="0.75 0.75 0.75 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="chassis_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="base_footprint"/>
+    <child link="chassis_link"/>
+  </joint>
+
+  <!-- ===================== Base link ===================== -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.00410075201158157 -0.000757897633767796 0.142190908416036" rpy="0 0 0"/>
+      <mass value="14.1404214939912"/>
+      <inertia ixx="0.0747083475505852" ixy="-1.74006588509029E-05" ixz="0.00068548387624605"
+               iyy="0.0608806077812559" iyz="6.21935967142056E-08" izz="0.0910694710737573"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/base_link.STL"/>
+      </geometry>
+      <material name="base_blue">
+        <color rgba="0.796 0.824 0.937 1"/>
+      </material>
+    </visual>
+    <!-- Body collision box.
+         Top  : z = 0.474 (below the lidar at z = 0.529)
+         Bottom: z = -0.016 in base_link -> 3 cm above the ground (base_link is 0.0465 above the ground) -->
+    <collision>
+      <origin xyz="0 0 0.229" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.9 0.45 0.49"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="base_link_jt" type="fixed">
+    <origin xyz="0 0 0.0465" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="base_link"/>
+  </joint>
+
+  <!-- ===================== Laser ===================== -->
+  <link name="laser">
+    <inertial>
+      <origin xyz="0.000115099330076085 -3.53742851760819E-06 -0.0130182896779998" rpy="0 0 0"/>
+      <mass value="0.10046205077288"/>
+      <inertia ixx="3.4201078614869E-05" ixy="-2.1320577894134E-10" ixz="9.73147116599212E-09"
+               iyy="3.41937214679315E-05" iyz="-3.62911520310395E-10" izz="4.21147068405955E-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/laser.STL"/>
+      </geometry>
+      <material name="laser_grey">
+        <color rgba="0.79 0.82 0.93 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="laser_jt" type="fixed">
+    <origin xyz="0.28225 8.78067717803022E-05 0.529034046554903" rpy="0 0 -3.14159265358979"/>
+    <parent link="base_link"/>
+    <child link="laser"/>
+  </joint>
+
+  <!-- ===================== IMU link ===================== -->
+  <link name="imu_link">
+    <inertial>
+      <origin xyz="0.000845680649576901 0.00075545964761381 -0.00185425295461589" rpy="0 0 0"/>
+      <mass value="0.000674678214489439"/>
+      <inertia ixx="2.17569992333801E-08" ixy="-2.12091450133379E-12" ixz="-1.04699023147566E-13"
+               iyy="1.84912152717305E-08" iyz="3.88608827335339E-13" izz="3.99591926332298E-08"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/imu_link.STL"/>
+      </geometry>
+      <material name="imu_grey">
+        <color rgba="0.75 0.75 0.75 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="imu_link_jt" type="fixed">
+    <origin xyz="0 0.000102250185358699 0.300850993995037" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+  </joint>
+
+  <!-- ===================== Mecanum wheel macro ===================== -->
+  <!-- roll   : 0 for left wheels, pi for right wheels (mesh is mirrored in the CAD)
+       axis_y : +1 for left wheels, -1 for right wheels
+       With these values, a positive joint velocity drives the robot forward on all 4 wheels -->
+  <xacro:macro name="mecanum_wheel" params="name x y roll axis_y">
+    <link name="${name}">
+      <inertial>
+        <origin xyz="6.59720139956077E-06 -0.00302823831675181 -6.00978607157021E-10" rpy="0 0 0"/>
+        <mass value="0.288217281634097"/>
+        <inertia ixx="8.49296106401835E-05" ixy="1.43015511484317E-08" ixz="-1.1339718810965E-12"
+                 iyy="0.000100555669784985" iyz="-7.27729464552934E-13" izz="8.49091110430561E-05"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find forklift_sim)/meshes/${name}.STL"/>
+        </geometry>
+        <material name="${name}_grey">
+          <color rgba="0.75 0.75 0.75 1"/>
+        </material>
+      </visual>
+      <!-- Cylinder collision with its axis along the wheel Y axis -->
+      <collision>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${name}_jt" type="continuous">
+      <origin xyz="${x} ${y} ${wheel_z}" rpy="${roll} 0 0"/>
+      <parent link="base_link"/>
+      <child link="${name}"/>
+      <axis xyz="0 ${axis_y} 0"/>
+      <limit effort="1000.0" velocity="100.0"/>
+      <dynamics damping="0.0" friction="0.0"/>
+    </joint>
+
+    <gazebo reference="${name}">
+      <mu1>${ground_mu}</mu1>
+      <mu2>${ground_mu}</mu2>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:mecanum_wheel name="front_left"  x="${wheel_x}"  y="${wheel_y}"  roll="0"    axis_y="1"/>
+  <xacro:mecanum_wheel name="front_right" x="${wheel_x}"  y="${-wheel_y}" roll="${pi}" axis_y="-1"/>
+  <xacro:mecanum_wheel name="back_left"   x="${-wheel_x}" y="${wheel_y}"  roll="0"    axis_y="1"/>
+  <xacro:mecanum_wheel name="back_right"  x="${-wheel_x}" y="${-wheel_y}" roll="${pi}" axis_y="-1"/>
+
+  <!-- ===================== Gazebo: friction of the body ===================== -->
+  <gazebo reference="base_link">
+    <mu1>${ground_mu}</mu1>
+    <mu2>${ground_mu}</mu2>
+  </gazebo>
+
+  <!-- ===================== Gazebo: holonomic drive ===================== -->
+  <!-- planar_move ignores wheel joints: it sets the body velocity directly from /cmd_vel.
+       It publishes odom and the TF odom -> base_footprint (base_footprint is the root link, so no TF conflict). -->
+  <gazebo>
+    <plugin name="planar_move" filename="libgazebo_ros_planar_move.so">
+      <update_rate>50</update_rate>
+      <publish_rate>50</publish_rate>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_footprint</robot_base_frame>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+    </plugin>
+  </gazebo>
+
+  <!-- ===================== Gazebo: 2D lidar ===================== -->
+  <gazebo reference="laser">
+    <sensor type="ray" name="lds_lfcd_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <!-- Set to true if you want to see the rays in the Gazebo GUI -->
+      <visualize>true</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.12</min>
+          <max>10.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=scan</remapping>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>laser</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>

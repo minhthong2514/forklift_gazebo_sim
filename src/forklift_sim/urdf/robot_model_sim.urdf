@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="forklift_sim">
+  <link name="base_footprint">
+    <inertial>
+      <origin xyz="-0.00192512550717041 -0.000689018981572781 0.180449455502325" rpy="0 0 0" />
+      <mass value="15.3937526903884" />
+      <inertia ixx="0.0750822670734706" ixy="-1.74008710174754E-05" ixz="0.000685474144944489" iyy="0.0613170241831307" iyz="6.25533060124774E-08" izz="0.0914512222280071" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/base_footprint.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/base_footprint.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.00410075201158157 -0.000757897633767796 0.142190908416036" rpy="0 0 0" />
+      <mass value="14.1404214939912" />
+      <inertia ixx="0.0747083475505852" ixy="-1.74006588509029E-05" ixz="0.00068548387624605" iyy="0.0608806077812559" iyz="6.21935967142056E-08" izz="0.0910694710737573" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.796078431372549 0.823529411764706 0.937254901960784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.31" rpy="0 0 0" />
+      <geometry>
+        <box size="0.9 0.45 0.65" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="base_link_jt" type="fixed">
+    <origin xyz="0 0 0.0465" rpy="0 0 0" />
+    <parent link="base_footprint" />
+    <child link="base_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="laser">
+    <inertial>
+      <origin xyz="0.000115099330076085 -3.53742851760819E-06 -0.0130182896779998" rpy="0 0 0" />
+      <mass value="0.10046205077288" />
+      <inertia ixx="3.4201078614869E-05" ixy="-2.1320577894134E-10" ixz="9.73147116599212E-09" iyy="3.41937214679315E-05" iyz="-3.62911520310395E-10" izz="4.21147068405955E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/laser.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/laser.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="laser_jt" type="fixed">
+    <origin xyz="0.28225 8.78067717803022E-05 0.529034046554903" rpy="0 0 -3.14159265358979" />
+    <parent link="base_link" />
+    <child link="laser" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <!-- Front Left Wheel (Visual only, no collision to prevent planar move conflicts) -->
+  <link name="front_left">
+    <inertial>
+      <origin xyz="6.59720139956077E-06 -0.00302823831675181 -6.00978607157021E-10" rpy="0 0 0" />
+      <mass value="0.288217281634097" />
+      <inertia ixx="8.49296106401835E-05" ixy="1.43015511484317E-08" ixz="-1.1339718810965E-12" iyy="0.000100555669784985" iyz="-7.27729464552934E-13" izz="8.49091110430561E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/front_left.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="front_left_jt" type="continuous">
+    <origin xyz="0.204999999999999 0.191587806771779 -0.000429006004963407" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="front_left" />
+    <axis xyz="0 1 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.0" />   
+  </joint>
+
+  <!-- Front Right Wheel -->
+  <link name="front_right">
+    <inertial>
+      <origin xyz="6.59694910595809E-06 -0.00302823952678875 -6.47261064190552E-10" rpy="0 0 0" />
+      <mass value="0.288217290342464" />
+      <inertia ixx="8.49296112927797E-05" ixy="1.43009415717104E-08" ixz="-1.26114408630013E-12" iyy="0.000100555670474318" iyz="-8.40453521264228E-13" izz="8.49091123769656E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/front_right.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="front_right_jt" type="continuous">
+    <origin xyz="0.205000000000001 -0.191412193228221 -0.000429006004963435" rpy="3.14159265358979 0 0" />
+    <parent link="base_link" />
+    <child link="front_right" />
+    <axis xyz="0 -1 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.0" />   
+  </joint>
+
+  <!-- Back Left Wheel -->
+  <link name="back_left">
+    <inertial>
+      <origin xyz="6.59713988804267E-06 -0.00302823866144852 -6.18176579370022E-10" rpy="0 0 0" />
+      <mass value="0.288217283906179" />
+      <inertia ixx="8.4929610920617E-05" ixy="1.43013415646674E-08" ixz="-1.16384806516502E-12" iyy="0.000100555669864889" iyz="-7.48245532259144E-13" izz="8.49091115575326E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/back_left.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="back_left_jt" type="continuous">
+    <origin xyz="-0.205000000000001 0.191587806771777 -0.000429006004961999" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="back_left" />
+    <axis xyz="0 1 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.0" />   
+  </joint>
+
+  <!-- Back Right Wheel -->
+  <link name="back_right">
+    <inertial>
+      <origin xyz="6.59698613911242E-06 -0.00302823948772889 -6.3496536500951E-10" rpy="0 0 0" />
+      <mass value="0.288217289741628" />
+      <inertia ixx="8.49296114166343E-05" ixy="1.43009119348606E-08" ixz="-1.20627920358455E-12" iyy="0.00010055567028263" iyz="-8.8579353528715E-13" izz="8.49091124316513E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/back_right.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="back_right_jt" type="continuous">
+    <origin xyz="-0.204999999999999 -0.191412193228223 -0.000429006004961971" rpy="3.14159265358979 0 0" />
+    <parent link="base_link" />
+    <child link="back_right" />
+    <axis xyz="0 -1 0" />
+    <limit effort="1000.0" velocity="100.0" />
+    <dynamics damping="0.0" friction="0.0" />   
+  </joint>
+
+  <link name="imu_link">
+    <inertial>
+      <origin xyz="0.000845680649576901 0.00075545964761381 -0.00185425295461589" rpy="0 0 0" />
+      <mass value="0.000674678214489439" />
+      <inertia ixx="2.17569992333801E-08" ixy="-2.12091450133379E-12" ixz="-1.04699023147566E-13" iyy="1.84912152717305E-08" iyz="3.88608827335339E-13" izz="3.99591926332298E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/imu_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find forklift_sim)/meshes/imu_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="imu_link_jt" type="fixed">
+    <origin xyz="0 0.000102250185358699 0.300850993995037" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="imu_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+</robot>

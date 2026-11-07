@@ -1,0 +1,6 @@
+build/
+install/
+log/
+
+src/forklift_sim/meshes
+
