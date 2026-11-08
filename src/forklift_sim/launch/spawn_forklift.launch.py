@@ -1,30 +1,35 @@
 import os
-
 import xacro
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('forklift_sim')
+    pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
+    pkg_aws_world = get_package_share_directory('aws_robomaker_small_warehouse_world')
 
-    # Expand the xacro into a plain URDF string
+    # Path to the AWS small warehouse world file
+    world_file = os.path.join(pkg_aws_world, 'worlds', 'small_warehouse.world')
+
+    # Start Gazebo with the AWS warehouse world
+    gazebo_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py')
+        ),
+        launch_arguments={
+            'world': world_file,
+            'use_sim_time': 'true'
+        }.items()
+    )
+
+    # Process the forklift URDF/Xacro file
     xacro_file = os.path.join(pkg_share, 'urdf', 'car_sim.urdf.xacro')
     robot_description = {'robot_description': xacro.process_file(xacro_file).toxml()}
 
-    # Start Gazebo Classic with the ROS 2 init + factory plugins
-    start_gazebo = ExecuteProcess(
-        cmd=['gazebo', '--verbose',
-             '-s', 'libgazebo_ros_init.so',
-             '-s', 'libgazebo_ros_factory.so'],
-        # Avoid Gazebo hanging while trying to reach the online model database
-        additional_env={'GAZEBO_MODEL_DATABASE_URI': ''},
-        output='screen'
-    )
-
-    # Publishes the static TF of all fixed joints and the wheel joints
+    # Publish robot state (TF tree)
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -32,18 +37,20 @@ def generate_launch_description():
         parameters=[robot_description, {'use_sim_time': True}]
     )
 
-    # Spawn the robot slightly above the ground (base_footprint is at ground level)
+    # Spawn the forklift model into the Gazebo simulation
     spawn_entity = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
         arguments=['-topic', 'robot_description',
                    '-entity', 'forklift_robot',
-                   '-z', '0.05'],
+                   '-x', '0.0',
+                   '-y', '0.0',
+                   '-z', '0.1'],
         output='screen'
     )
 
     return LaunchDescription([
-        start_gazebo,
+        gazebo_launch,
         robot_state_publisher,
         spawn_entity,
     ])
