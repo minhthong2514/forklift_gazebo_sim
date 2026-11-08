@@ -1,3 +1,6 @@
 [submodule "src/m-explore-ros2"]
 	path = src/m-explore-ros2
 	url = https://github.com/robo-friends/m-explore-ros2.git
+[submodule "src/aws-robomaker-small-warehouse-world"]
+	path = src/aws-robomaker-small-warehouse-world
+	url = https://github.com/aws-robotics/aws-robomaker-small-warehouse-world.git

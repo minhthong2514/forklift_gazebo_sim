@@ -35,7 +35,6 @@
     <child link="chassis_link"/>
   </joint>
 
-  <!-- ===================== Base link ===================== -->
   <link name="base_link">
     <inertial>
       <origin xyz="-0.00410075201158157 -0.000757897633767796 0.142190908416036" rpy="0 0 0"/>
@@ -52,13 +51,17 @@
         <color rgba="0.796 0.824 0.937 1"/>
       </material>
     </visual>
-    <!-- Body collision box.
-         Top  : z = 0.474 (below the lidar at z = 0.529)
-         Bottom: z = -0.016 in base_link -> 3 cm above the ground (base_link is 0.0465 above the ground) -->
+    
     <collision>
-      <origin xyz="0 0 0.229" rpy="0 0 0"/>
+      <origin xyz="0.02 0 0.229" rpy="0 0 0"/>
       <geometry>
-        <box size="0.9 0.45 0.49"/>
+        <box size="0.58 0.44 0.49"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.465 0 0.0185" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.31 0.20 0.07"/>
       </geometry>
     </collision>
   </link>
@@ -69,7 +72,6 @@
     <child link="base_link"/>
   </joint>
 
-  <!-- ===================== Laser ===================== -->
   <link name="laser">
     <inertial>
       <origin xyz="0.000115099330076085 -3.53742851760819E-06 -0.0130182896779998" rpy="0 0 0"/>
@@ -94,7 +96,6 @@
     <child link="laser"/>
   </joint>
 
-  <!-- ===================== IMU link ===================== -->
   <link name="imu_link">
     <inertial>
       <origin xyz="0.000845680649576901 0.00075545964761381 -0.00185425295461589" rpy="0 0 0"/>
@@ -119,10 +120,6 @@
     <child link="imu_link"/>
   </joint>
 
-  <!-- ===================== Mecanum wheel macro ===================== -->
-  <!-- roll   : 0 for left wheels, pi for right wheels (mesh is mirrored in the CAD)
-       axis_y : +1 for left wheels, -1 for right wheels
-       With these values, a positive joint velocity drives the robot forward on all 4 wheels -->
   <xacro:macro name="mecanum_wheel" params="name x y roll axis_y">
     <link name="${name}">
       <inertial>
@@ -140,7 +137,7 @@
           <color rgba="0.75 0.75 0.75 1"/>
         </material>
       </visual>
-      <!-- Cylinder collision with its axis along the wheel Y axis -->
+
       <collision>
         <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
         <geometry>
@@ -169,15 +166,11 @@
   <xacro:mecanum_wheel name="back_left"   x="${-wheel_x}" y="${wheel_y}"  roll="0"    axis_y="1"/>
   <xacro:mecanum_wheel name="back_right"  x="${-wheel_x}" y="${-wheel_y}" roll="${pi}" axis_y="-1"/>
 
-  <!-- ===================== Gazebo: friction of the body ===================== -->
   <gazebo reference="base_link">
     <mu1>${ground_mu}</mu1>
     <mu2>${ground_mu}</mu2>
   </gazebo>
 
-  <!-- ===================== Gazebo: holonomic drive ===================== -->
-  <!-- planar_move ignores wheel joints: it sets the body velocity directly from /cmd_vel.
-       It publishes odom and the TF odom -> base_footprint (base_footprint is the root link, so no TF conflict). -->
   <gazebo>
     <plugin name="planar_move" filename="libgazebo_ros_planar_move.so">
       <update_rate>50</update_rate>
@@ -189,11 +182,22 @@
     </plugin>
   </gazebo>
 
-  <!-- ===================== Gazebo: 2D lidar ===================== -->
+  <gazebo>
+    <plugin name="wheel_joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <remapping>~/out:=joint_states</remapping>
+      </ros>
+      <update_rate>30</update_rate>
+      <joint_name>front_left_jt</joint_name>
+      <joint_name>front_right_jt</joint_name>
+      <joint_name>back_left_jt</joint_name>
+      <joint_name>back_right_jt</joint_name>
+    </plugin>
+  </gazebo>
+
   <gazebo reference="laser">
     <sensor type="ray" name="lds_lfcd_sensor">
       <pose>0 0 0 0 0 0</pose>
-      <!-- Set to true if you want to see the rays in the Gazebo GUI -->
       <visualize>true</visualize>
       <update_rate>10</update_rate>
       <ray>
