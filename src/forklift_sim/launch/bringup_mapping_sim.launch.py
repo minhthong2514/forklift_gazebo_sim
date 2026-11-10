@@ -48,16 +48,24 @@ def generate_launch_description():
 
     # 5. Frontier exploration 
     explore = Node(
-        package='explore_lite',
-        executable='explore',
-        name='explore_node',
-        parameters=[os.path.join(explore_config, 'params.yaml'), {'use_sim_time': True}],
-        output='screen')
+    package='explore_lite',
+    executable='explore',
+    name='explore_node',
+    parameters=[
+        os.path.join(explore_config, 'params.yaml'),
+        # Later entries override the yaml values above
+        {'use_sim_time': True,
+         'planner_frequency': 0.5,
+         'potential_scale': 4.0,
+         'gain_scale': 0.01,
+         'min_frontier_size': 1.0},
+    ],
+    output='screen')
 
     return LaunchDescription([
         spawn_forklift,
         rviz,
         slam_toolbox,
         nav2,
-        # explore,
+        explore,
     ])
