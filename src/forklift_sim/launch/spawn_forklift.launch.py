@@ -34,7 +34,7 @@ def generate_launch_description():
         launch_arguments={'world': world_file}.items()
     )
 
-    xacro_file = os.path.join(pkg_share, 'urdf', 'car_sim.urdf.xacro')
+    xacro_file = os.path.join(pkg_share, 'urdf', 'robot_model_sim.urdf.xacro')
     robot_description = {'robot_description': xacro.process_file(xacro_file).toxml()}
 
     robot_state_publisher = Node(
