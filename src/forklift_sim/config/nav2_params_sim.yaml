@@ -94,8 +94,8 @@ controller_server:
     goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.15
-      yaw_goal_tolerance: 0.25
+      xy_goal_tolerance: 0.05
+      yaw_goal_tolerance: 0.05
       path_length_tolerance: 1.0
 
     # Path handle parameters
@@ -116,11 +116,14 @@ controller_server:
       angular_dist_threshold: 0.785
       forward_sampling_distance: 0.5
       angular_disengage_threshold: 0.3925
-      rotate_to_heading_angular_vel: 1.8
-      max_angular_accel: 3.2
+      rotate_to_heading_angular_vel: 0.8      # Vyaw: 0.8 rad/s
+      max_angular_accel: 2.0                  # accel: 2.0 rad/s2
       max_cost_threshold: 254.0
       simulate_ahead_time: 1.0
-      rotate_to_goal_heading: false
+      rotate_to_goal_heading: True
+      rotate_to_heading_once: true
+      closed_loop: true
+      use_path_orientations: false
 
       # Primary DWB controller
       primary_controller: "dwb_core::DWBLocalPlanner"
@@ -401,10 +404,10 @@ velocity_smoother:
     scale_velocities: False
     feedback: "OPEN_LOOP" 
     # feedback: "CLOSED_LOOP"
-    max_velocity: [0.35, 0.20, 0.35]
-    min_velocity: [-0.15, -0.20, -0.35]
-    max_accel: [0.5, 0.3, 0.5]
-    max_decel: [-0.8, -0.5, -0.8]
+    max_velocity: [0.35, 0.20, 0.8]
+    min_velocity: [-0.15, -0.20, -0.8]
+    max_accel: [0.5, 0.3, 2.0]
+    max_decel: [-0.8, -0.5, -2.0]
     odom_topic: "odom"
     # odom_topic: "odometry/filtered"
     odom_duration: 0.1
