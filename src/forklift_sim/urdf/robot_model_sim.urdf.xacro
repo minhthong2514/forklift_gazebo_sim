@@ -8,6 +8,10 @@
   <xacro:property name="wheel_y"      value="0.1915"/>
   <xacro:property name="wheel_z"      value="-0.000429"/>
   <xacro:property name="ground_mu"    value="0.01"/>
+  <xacro:property name="zed_height"   value="0.03"/>
+  <xacro:property name="zed_slope"    value="0.05"/>
+
+  <xacro:include filename="$(find zed_description)/urdf/zed_macro.urdf.xacro"/>
 
   <link name="base_footprint"/>
 
@@ -118,6 +122,31 @@
     <origin xyz="0 0.000102250185358699 0.300850993995037" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="imu_link"/>
+  </joint>
+
+  <link name="zed2">
+    <inertial>
+      <origin xyz="0.00123592571626313 -0.00445421152338907 -0.000367570735085532" rpy="0 0 0"/>
+      <mass value="0.152258317197808"/>
+      <inertia ixx="0.000372381871693472" ixy="1.58824301550385E-09" ixz="-3.68658632371617E-07"
+               iyy="2.281796048433E-05" iyz="6.47520014252541E-09" izz="0.000374684793958985"/>
+    </inertial>
+  </link>
+
+  <joint name="zed2_jt" type="fixed">
+    <origin xyz="0.295000000000002 0 0.577999999999999" rpy="0 0.872664625997167 0"/>
+    <parent link="base_link"/>
+    <child link="zed2"/>
+  </joint>
+
+  <xacro:zed_camera name="zed2" model="zed2" enable_gnss="false">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:zed_camera>
+  
+  <joint name="connect_zed_to_forklift" type="fixed">
+    <parent link="zed2" />    
+    <child link="zed2_camera_link" /> 
+    <origin xyz="${zed_height/2*sin(zed_slope)} 0 ${-zed_height/2*cos(zed_slope)}" rpy="0 ${-zed_slope} 0"/>
   </joint>
 
   <xacro:macro name="mecanum_wheel" params="name x y roll axis_y">

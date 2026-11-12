@@ -4,3 +4,6 @@
 [submodule "src/aws-robomaker-small-warehouse-world"]
 	path = src/aws-robomaker-small-warehouse-world
 	url = https://github.com/aws-robotics/aws-robomaker-small-warehouse-world.git
+[submodule "src/zed-ros2-wrapper"]
+	path = src/zed-ros2-wrapper
+	url = https://github.com/stereolabs/zed-ros2-wrapper.git
