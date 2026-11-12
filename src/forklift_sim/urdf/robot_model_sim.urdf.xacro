@@ -149,6 +149,39 @@
     <origin xyz="${zed_height/2*sin(zed_slope)} 0 ${-zed_height/2*cos(zed_slope)}" rpy="0 ${-zed_slope} 0"/>
   </joint>
 
+  <gazebo reference="zed2_camera_link">
+    <sensor type="depth" name="zed2_camera">
+      <update_rate>10.0</update_rate>
+      <visualize>false</visualize>
+      <camera>
+        <horizontal_FOV>1.57</horizontal_FOV>
+        <image>
+          <width>320</width>
+          <height>180</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>20.0</far>
+        </clip>
+      </camera>
+      <plugin name="zed2_camera_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>zed2</namespace>
+          <remapping>zed2_camera/image_raw:=left/image_raw</remapping>
+          <remapping>zed2_camera/camera_info:=left/camera_info</remapping>
+          <remapping>zed2_camera/depth/image_raw:=depth/depth_registered</remapping>
+          <remapping>zed2_camera/depth/camera_info:=depth/camera_info</remapping>
+          <remapping>zed2_camera/points:=point_cloud/cloud_registered</remapping>
+        </ros>
+        <camera_name>zed2_camera</camera_name>
+        <frame_name>zed2_camera_optical_frame</frame_name>
+        <min_depth>0.1</min_depth>
+        <max_depth>10.0</max_depth>
+      </plugin>
+    </sensor>
+  </gazebo>
+
   <xacro:macro name="mecanum_wheel" params="name x y roll axis_y">
     <link name="${name}">
       <inertial>
